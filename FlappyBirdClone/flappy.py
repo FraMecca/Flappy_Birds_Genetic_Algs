@@ -1,9 +1,11 @@
 from itertools import cycle
 import random
-import sys
+import sys, os
 
 import pygame
 from pygame.locals import *
+
+os.chdir("./FlappyBirdClone")
 
 FPS = 30
 SCREENWIDTH  = 288
@@ -49,8 +51,8 @@ PIPES_LIST = (
     'assets/sprites/pipe-red.png',
 )
 
-
-def main():
+from neat import nn, population, statistics
+def main(net):
     global SCREEN, FPSCLOCK
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
@@ -79,10 +81,7 @@ def main():
     IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
 
     # sounds
-    if 'win' in sys.platform:
-        soundExt = '.wav'
-    else:
-        soundExt = '.ogg'
+    soundExt = '.ogg'
 
     # #SOUNDS['die']    = pygame.mixer.Sound('assets/audio/die' + soundExt)
     # #SOUNDS['hit']    = pygame.mixer.Sound('assets/audio/hit' + soundExt)
@@ -90,43 +89,55 @@ def main():
     # #SOUNDS['swoosh'] = pygame.mixer.Sound('assets/audio/swoosh' + soundExt)
     # #SOUNDS['wing']   = pygame.mixer.Sound('assets/audio/wing' + soundExt)
 
-    while True:
-        # select random background sprites
-        randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
-        IMAGES['background'] = pygame.image.load(BACKGROUNDS_LIST[randBg]).convert()
+    # select random background sprites
+    randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
+    IMAGES['background'] = pygame.image.load(BACKGROUNDS_LIST[randBg]).convert()
 
-        # select random player sprites
-        randPlayer = random.randint(0, len(PLAYERS_LIST) - 1)
-        IMAGES['player'] = (
-            pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
-            pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
-            pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
-        )
+    # select random player sprites
+    randPlayer = random.randint(0, len(PLAYERS_LIST) - 1)
+    IMAGES['player'] = (
+        pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
+        pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
+        pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
+    )
 
-        # select random pipe sprites
-        pipeindex = random.randint(0, len(PIPES_LIST) - 1)
-        IMAGES['pipe'] = (
-            pygame.transform.rotate(
-                pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(), 180),
-            pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(),
-        )
+    # select random pipe sprites
+    pipeindex = random.randint(0, len(PIPES_LIST) - 1)
+    IMAGES['pipe'] = (
+        pygame.transform.rotate(
+            pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(), 180),
+        pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(),
+    )
 
-        # hismask for pipes
-        HITMASKS['pipe'] = (
-            getHitmask(IMAGES['pipe'][0]),
-            getHitmask(IMAGES['pipe'][1]),
-        )
+    # hismask for pipes
+    HITMASKS['pipe'] = (
+        getHitmask(IMAGES['pipe'][0]),
+        getHitmask(IMAGES['pipe'][1]),
+    )
 
-        # hitmask for player
-        HITMASKS['player'] = (
-            getHitmask(IMAGES['player'][0]),
-            getHitmask(IMAGES['player'][1]),
-            getHitmask(IMAGES['player'][2]),
-        )
+    # hitmask for player
+    HITMASKS['player'] = (
+        getHitmask(IMAGES['player'][0]),
+        getHitmask(IMAGES['player'][1]),
+        getHitmask(IMAGES['player'][2]),
+    )
 
-        movementInfo = showWelcomeAnimation()
-        crashInfo = mainGame(movementInfo)
-        showGameOverScreen(crashInfo)
+    movementInfo = showWelcomeAnimation()
+    crashInfo = mainGame(movementInfo, net)
+    pygame.quit()
+    return
+    # showGameOverScreen(crashInfo)
+
+def calculate_movement(net, h1, h2, dist, height):
+    """gets the movement from neural network"""
+    #h1 = y of lower pipe
+    #h2 = y of higher pipe
+    #dist = distance from pipe
+    #height = actual height of the bird
+    #returns 0 if no movement, 1 if movement
+    result = net.serial_activate([h1, h2, dist, height])
+    print(result)
+    return round(result[0])
 
 
 def showWelcomeAnimation():
@@ -151,18 +162,18 @@ def showWelcomeAnimation():
     playerShmVals = {'val': 0, 'dir': 1}
 
     while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+        # for event in pygame.event.get():
+            # if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                # pygame.quit()
+                # sys.exit()
+            # if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
                 # make first flap sound and return values for mainGame
                 #SOUNDS['wing'].play()
-                return {
-                    'playery': playery + playerShmVals['val'],
-                    'basex': basex,
-                    'playerIndexGen': playerIndexGen,
-                }
+        return {
+            'playery': playery + playerShmVals['val'],
+            'basex': basex,
+            'playerIndexGen': playerIndexGen,
+        }
 
         # adjust playery, playerIndex, basex
         if (loopIter + 1) % 5 == 0:
@@ -183,7 +194,7 @@ def showWelcomeAnimation():
         FPSCLOCK.tick(FPS)
 
 
-def mainGame(movementInfo):
+def mainGame(movementInfo, net):
     score = playerIndex = loopIter = 0
     playerIndexGen = movementInfo['playerIndexGen']
     playerx, playery = int(SCREENWIDTH * 0.2), movementInfo['playery']
@@ -193,6 +204,7 @@ def mainGame(movementInfo):
 
     # get 2 new pipes to add to upperPipes lowerPipes list
     newPipe1 = getRandomPipe()
+    # print(newPipe1)
     newPipe2 = getRandomPipe()
 
     # list of upper pipes
@@ -210,25 +222,23 @@ def mainGame(movementInfo):
     pipeVelX = -4
 
     # player velocity, max velocity, downward accleration, accleration on flap
-    playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  10   # max vel along Y, max descend speed
-    playerMinVelY =  -8   # min vel along Y, max ascend speed
-    playerAccY    =   1   # players downward accleration
-    playerFlapAcc =  -9   # players speed on flapping
+    playerVelY    =  -90   # player's velocity along Y, default same as playerFlapped
+    playerMaxVelY =  100   # max vel along Y, max descend speed
+    playerMinVelY =  -80   # min vel along Y, max ascend speed
+    playerAccY    =   1*(-playerVelY)   # players downward accleration
+    playerFlapAcc =  -9*(-playerVelY)  # players speed on flapping
     playerFlapped = False # True when player flaps
 
 
     while True:
-        for event in pygame.event.get():
-            print (event)
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
-                if playery > -2 * IMAGES['player'][0].get_height():
-                    playerVelY = playerFlapAcc
-                    playerFlapped = True
-                    #SOUNDS['wing'].play()
+        # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
+        mov = calculate_movement(net, lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
+        print(mov)
+        if mov == 1:  
+            if playery > -2 * IMAGES['player'][0].get_height():
+                playerVelY = playerFlapAcc
+                playerFlapped = True
+                #SOUNDS['wing'].play()
 
         # check for crash here
         crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
