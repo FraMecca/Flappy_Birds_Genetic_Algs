@@ -29,7 +29,9 @@ def eval_fitness(g):
     # # its maximum value of 1.0.
     # print (sum_square_error, "--> ERROR")
     # g.fitness = time.time() - time_init
-    return time.time() - time_init
+    t = time.time() - time_init
+    print(t)
+    return t
 
 # local_dir = os.path.dirname(__file__)
 local_dir = "/home/user/git_mio/neat"

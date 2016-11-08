@@ -7,7 +7,7 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 30
+FPS = 60
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
@@ -58,7 +58,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-
+    random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -136,7 +136,7 @@ def calculate_movement(net, h1, h2, dist, height):
     #height = actual height of the bird
     #returns 0 if no movement, 1 if movement
     result = net.serial_activate([h1, h2, dist, height])
-    print(result)
+    # print(result)
     return round(result[0])
 
 
@@ -222,9 +222,9 @@ def mainGame(movementInfo, net):
     pipeVelX = -4
 
     # player velocity, max velocity, downward accleration, accleration on flap
-    playerVelY    =  -90   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  100   # max vel along Y, max descend speed
-    playerMinVelY =  -80   # min vel along Y, max ascend speed
+    playerVelY    =  -900   # player's velocity along Y, default same as playerFlapped
+    playerMaxVelY =  1000   # max vel along Y, max descend speed
+    playerMinVelY =  -800   # min vel along Y, max ascend speed
     playerAccY    =   1*(-playerVelY)   # players downward accleration
     playerFlapAcc =  -9*(-playerVelY)  # players speed on flapping
     playerFlapped = False # True when player flaps
@@ -233,7 +233,7 @@ def mainGame(movementInfo, net):
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
         mov = calculate_movement(net, lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        print(mov)
+        # print(mov)
         if mov == 1:  
             if playery > -2 * IMAGES['player'][0].get_height():
                 playerVelY = playerFlapAcc
