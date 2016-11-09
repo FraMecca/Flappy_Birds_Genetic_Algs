@@ -20,16 +20,16 @@ import time
 import FlappyBirdClone.flappy as flappy
 
 def eval_fitness(g):
-    time_init = time.time()
+    # time_init = time.time()
     net = nn.create_feed_forward_phenotype(g)
-    flappy.main(net)
+    pipeCnt, dist1, dist2, travel = flappy.main(net)
     # output = net.serial_activate(inputs)
 
     # When the output matches expected for all inputs, fitness will reach
     # # its maximum value of 1.0.
     # print (sum_square_error, "--> ERROR")
     # g.fitness = time.time() - time_init
-    t = time.time() - time_init
+    t = pipeCnt * 10 - (dist1 / 50 + dist2 / 50) * travel  + travel * 1
     print(t)
     return t
 

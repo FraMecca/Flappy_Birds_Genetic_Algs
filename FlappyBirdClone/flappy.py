@@ -123,19 +123,19 @@ def main(net):
     )
 
     movementInfo = showWelcomeAnimation()
-    crashInfo = mainGame(movementInfo, net)
+    crashInfo, pipeCnt, dist1, dist2 , travel= mainGame(movementInfo, net)
     pygame.quit()
-    return
+    return pipeCnt, dist1, dist2, travel
     # showGameOverScreen(crashInfo)
 
-def calculate_movement(net, h1, h2, dist, height):
+def calculate_movement(net, h1, h2, dist, height, pipeCnt):
     """gets the movement from neural network"""
     #h1 = y of lower pipe
     #h2 = y of higher pipe
     #dist = distance from pipe
     #height = actual height of the bird
     #returns 0 if no movement, 1 if movement
-    result = net.serial_activate([h1, h2, dist, height])
+    result = net.serial_activate([h1, h2, dist, height, pipeCnt])
     # print(result)
     return round(result[0])
 
@@ -190,7 +190,7 @@ def showWelcomeAnimation():
         SCREEN.blit(IMAGES['message'], (messagex, messagey))
         SCREEN.blit(IMAGES['base'], (basex, BASEY))
 
-        pygame.display.update()
+        # pygame.display.update()
         FPSCLOCK.tick(FPS)
 
 
@@ -202,6 +202,9 @@ def mainGame(movementInfo, net):
     basex = movementInfo['basex']
     baseShift = IMAGES['base'].get_width() - IMAGES['background'].get_width()
 
+    # keep track of number of pipes passed
+    pipeCnt = 0
+
     # get 2 new pipes to add to upperPipes lowerPipes list
     newPipe1 = getRandomPipe()
     # print(newPipe1)
@@ -209,32 +212,32 @@ def mainGame(movementInfo, net):
 
     # list of upper pipes
     upperPipes = [
-        {'x': SCREENWIDTH + 200, 'y': newPipe1[0]['y']},
-        {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
+        {'x': SCREENWIDTH + 10, 'y': newPipe1[0]['y']},
+        {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
-        {'x': SCREENWIDTH + 200, 'y': newPipe1[1]['y']},
-        {'x': SCREENWIDTH + 200 + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
+        {'x': SCREENWIDTH + 10, 'y': newPipe1[1]['y']},
+        {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
     ]
 
     pipeVelX = -4
 
     # player velocity, max velocity, downward accleration, accleration on flap
-    playerVelY    =  -900   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  1000   # max vel along Y, max descend speed
-    playerMinVelY =  -800   # min vel along Y, max ascend speed
-    playerAccY    =   1*(-playerVelY)   # players downward accleration
-    playerFlapAcc =  -9*(-playerVelY)  # players speed on flapping
+    playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
+    playerMaxVelY =  10   # max vel along Y, max descend speed
+    playerMinVelY =  -8   # min vel along Y, max ascend speed
+    playerAccY    =   1   # players downward accleration
+    playerFlapAcc =  -9  # players speed on flapping
     playerFlapped = False # True when player flaps
 
 
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        mov = calculate_movement(net, lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
+        mov = calculate_movement(net, lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery, pipeCnt)
         # print(mov)
-        if mov == 1:  
+        if mov == 1:
             if playery > -2 * IMAGES['player'][0].get_height():
                 playerVelY = playerFlapAcc
                 playerFlapped = True
@@ -252,7 +255,7 @@ def mainGame(movementInfo, net):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-            }
+            }, score, abs (playery - lowerPipes[0]['y']), abs (playery - upperPipes[0]['y']), playerx 
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
@@ -291,6 +294,7 @@ def mainGame(movementInfo, net):
         if upperPipes[0]['x'] < -IMAGES['pipe'][0].get_width():
             upperPipes.pop(0)
             lowerPipes.pop(0)
+            pipeCnt += 1
 
         # draw sprites
         SCREEN.blit(IMAGES['background'], (0,0))
