@@ -190,7 +190,7 @@ def showWelcomeAnimation():
 
 
 def mainGame(movementInfo, net):
-    score = playerIndex = loopIter = 0
+    score = playerIndex = loopIter = 1
     playerIndexGen = movementInfo['playerIndexGen']
     playerx, playery = int(SCREENWIDTH * 0.2), movementInfo['playery']
 
@@ -243,8 +243,7 @@ def mainGame(movementInfo, net):
                                upperPipes, lowerPipes)
         if crashTest[0]:
             font = pygame.font.SysFont('Arial', 25)
-            SCREEN.blit(font.render(str (playerx), True, (0,0,0)), (0, 10))
-            SCREEN.blit(font.render(str (abs (playery - (upperPipes[0]['y'] + lowerPipes[0]['y']))), True, (0,0,0)), (0, 50))
+            # SCREEN.blit(font.render("LOWER" + str (lowerPipes[0]['y']), True, (0,0,0)), (0, playery))
             pygame.display.update()
             # time.sleep (2)
             return {
@@ -255,7 +254,8 @@ def mainGame(movementInfo, net):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-            },playerx, abs ((playery - ((upperPipes[0]['y'] - lowerPipes[0]['y']) / 2) + upperPipes[0]['y']))
+            },score * (SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
+            print (score * (SCREENWIDTH - lowerPipes[0]['x']))
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2

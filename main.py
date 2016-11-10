@@ -69,8 +69,10 @@ def create_new_population (pop, mutationProb, randRange):
 
 def fitness (bird):
     travel, distance = flappy.main (bird)
-    print (travel / distance, " with this distance: ", distance, "with this travel: ", travel)
-    return int (travel / distance) * 100
+    if distance == 0:
+        distance = 0.001
+    print (round (travel*10 - distance), " with this distance: ", distance, "with this travel: ", travel)
+    return round (travel*10 - distance) 
 
 def iterate_pop (pop):
     for i in range (0, len (pop), 6):
@@ -98,5 +100,5 @@ if __name__ == '__main__':
 
     for i in range (0, int (argv[1])):
         print ("POP ", i)
-        pop = create_new_population (pop, 0.07, [-100, 100])
+        pop = create_new_population (pop, 0.1, [-100, 100])
         pop = iterate_pop (pop)
