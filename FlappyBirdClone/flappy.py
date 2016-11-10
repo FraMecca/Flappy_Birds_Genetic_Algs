@@ -246,7 +246,7 @@ def mainGame(movementInfo, net):
             SCREEN.blit(font.render(str (playerx), True, (0,0,0)), (0, 10))
             SCREEN.blit(font.render(str (abs (playery - (upperPipes[0]['y'] + lowerPipes[0]['y']))), True, (0,0,0)), (0, 50))
             pygame.display.update()
-            time.sleep (2)
+            # time.sleep (2)
             return {
                 'y': playery,
                 'groundCrash': crashTest[1],
