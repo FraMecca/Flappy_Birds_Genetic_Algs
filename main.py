@@ -1,49 +1,102 @@
 import os
-
-from neat import nn, population, statistics, parallel
-
-# import time
+from numpy import exp
+import time
+import random
 import FlappyBirdClone.flappy as flappy
 
-def eval_fitness(g):
-    # time_init = time.time()
-    net = nn.create_feed_forward_phenotype(g)
-    pipeCnt, dist1, dist2, travel = flappy.main(net)
-    # output = net.serial_activate(inputs)
+class Bird(object):
 
-    # When the output matches expected for all inputs, fitness will reach
-    # # its maximum value of 1.0.
-    # print (sum_square_error, "--> ERROR")
-    # g.fitness = time.time() - time_init
-    t = pipeCnt * 10 - (dist1 / 50 + dist2 / 50) * travel  + travel * 1
-    print(t)
-    return t
+    def __init__(self):
+        self.fitness = 1
+        self.gene = [] #using 3 chromosomes
+        self.flap = 0
 
-local_dir = os.path.dirname('../')
-config_path = os.path.join(local_dir, 'main_config')
-pe = parallel.ParallelEvaluator(6, eval_fitness)
-pop = population.Population(config_path)
-pop.run(pe.evaluate, 6000)
+    #2flapornot2flap
+    def toflapornottoflap(self, inputs):
+        self.flap = 0
+        for i in zip (inputs, self.gene):
+            self.flap += i[0] *  i[1] * random.randint (0, 100)
+        # print ( 1 / (1 + exp (-self.flap / 100000)), self.flap)
+        return 1 / (1 + exp (-self.flap / 100000))
 
 
-# Log statistics.
-# statistics.save_stats(pop.statistics)
-# statistics.save_species_count(pop.statistics)
-# statistics.save_species_fitness(pop.statistics)
+def big_bang(n, sizeGene, randRange):
+    # sizeGene = len of gene list
+    # randRange = dimension of weight of genes
+    #n = number of pidgeons
+    pop = []
+    for i in range(0, n):
+        b = Bird()
+        b.gene = [random.uniform (randRange[0], randRange[1]) for i in range(0, sizeGene)]
+        pop.append (b)
+    return pop
 
-print('Number of evaluations: {0}'.format(pop.total_evaluations))
+def have_the_sex (abird, bbird, mutationProb, randRange):
+    child = Bird ()
+    for i in range (3):
+        if random.random () < mutationProb:
+            child.gene.append (random.uniform (randRange[0], randRange[1]))
+        if random.randint (0, 1):
+            child.gene.append (abird.gene[i])
+        else:
+            child.gene.append (bbird.gene[i])
 
-# Show output of the most fit genome against training data.
-winner = pop.statistics.best_genome()
-print('\nBest genome:\n{!s}'.format(winner))
-print('\nOutput:')
-# at this point, just create a net using the winner and make it compute the solution with its parameters
-winner_net = nn.create_feed_forward_phenotype(winner)
-for inputs, expected in zip(xor_inputs, xor_outputs):
-    output = winner_net.serial_activate(inputs)
-    print("expected {0:1.5f} got {1:1.5f}".format(expected, output[0] * 100))
+    return child
 
-while (1):
-    print ("dammi un numero")
-    n = input ()
-    print (winner_net.serial_activate ([int (n)]) [0] * 100)
+def create_new_population (pop, mutationProb, randRange):
+    pool = list ()
+    size = len (pop)
+    for b in pop:
+        for i in range (0, b.fitness):
+            # create pool of elements to reproduce
+            pool.append (b)
+
+    newpop = list ()
+
+
+    for i in range (size):
+        b = pool[random.randint (0, size - 1)]
+        a = pool[random.randint (0, size - 1)]
+        while a == b:
+            # you can't fap, b should be different from a
+            ar = random.randint (0, len (pool) - 1)
+            br = random.randint (0, len (pool) - 1)
+            a = pool[ar]
+            b = pool[br]
+        newpop.append (have_the_sex (a, b, mutationProb, randRange))
+
+    return newpop
+
+def fitness (bird):
+    travel, distance = flappy.main (bird)
+    print (travel / distance)
+    return int (travel / distance) * 100
+
+def iterate_pop (pop):
+    for i in range (0, len (pop), 6):
+        j = 0
+        pool = ThreadPool (6)
+        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5]]
+        ret = pool.map (fitness, lst)
+        pool.close ()
+        pool.join ()
+        pop[i] .fitness= ret[j]
+        pop[i+1].fitness = ret[j+1]
+        pop[i+2] .fitness= ret[j+2]
+        pop[i+3] .fitness= ret[j+3]
+        pop[i+5] .fitness= ret[j+5]
+        pop[i+4] .fitness= ret[j+4]
+    return pop
+
+
+
+from multiprocessing import Pool as ThreadPool
+if __name__ == '__main__':
+    from sys import argv
+    pop = big_bang (60, 3, [-100, 100])
+    pop = iterate_pop (pop)
+
+    for i in range (0, int (argv[1])):
+        print ("POP ", i)
+        pop = create_new_population (pop, 0.2, [-100, 100])
+        pop = iterate_pop (pop)
