@@ -3,6 +3,7 @@ import random
 import sys, os
 
 import pygame
+import time
 from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
@@ -241,8 +242,11 @@ def mainGame(movementInfo, net):
         crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
                                upperPipes, lowerPipes)
         if crashTest[0]:
-            import time
-            time.sleep (5)
+            font = pygame.font.SysFont('Arial', 25)
+            SCREEN.blit(font.render(str (playerx), True, (0,0,0)), (0, 10))
+            SCREEN.blit(font.render(str (abs (playery - (upperPipes[0]['y'] + lowerPipes[0]['y']))), True, (0,0,0)), (0, 50))
+            pygame.display.update()
+            time.sleep (2)
             return {
                 'y': playery,
                 'groundCrash': crashTest[1],
