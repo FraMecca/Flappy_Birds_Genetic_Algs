@@ -8,7 +8,7 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 420
+FPS = 120
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
@@ -59,7 +59,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-    # random.seed(1)
+    random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -129,9 +129,9 @@ def main(net):
     return travel, distance
     # showGameOverScreen(crashInfo)
 
-def calculate_movement(net, y, pipex, pipey):
+def calculate_movement(net, y, pipey):
     """gets the movement from neural network"""
-    result = net.toflapornottoflap ([y, pipex, pipey])
+    result = net.toflapornottoflap ([y, pipey])
     return round(result)
 
 
@@ -230,7 +230,7 @@ def mainGame(movementInfo, net):
 
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        mov = calculate_movement(net, playery, lowerPipes[0]['x']-playerx, lowerPipes[0]['y'])
+        mov = calculate_movement(net, playery, lowerPipes[0]['y']+50)
         # print(mov)
         if mov == 1:
             if playery > -2 * IMAGES['player'][0].get_height():

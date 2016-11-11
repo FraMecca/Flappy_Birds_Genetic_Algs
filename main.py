@@ -4,7 +4,7 @@ import time
 import random
 import FlappyBirdClone.flappy as flappy
 
-THRESHOLD = 1650
+THRESHOLD = 90
 MUT_THRESHOLD = 0.07
 avgFitness = []
 mutationProb = MUT_THRESHOLD
@@ -20,7 +20,7 @@ class Bird(object):
     def toflapornottoflap(self, inputs):
         self.flap = 0
         for i in zip (inputs, self.gene):
-            self.flap += i[0] *  i[1] * random.randint (0, 100)
+            self.flap += i[0] *  i[1] #* random.randint (0, 100)
         # print ( 1 / (1 + exp (-self.flap / 100000)), self.flap)
         return 1 / (1 + exp (-self.flap / 100000))
 
@@ -38,7 +38,7 @@ def big_bang(n, sizeGene, randRange):
 
 def have_the_sex (abird, bbird, randRange):
     child = Bird ()
-    for i in range (3):
+    for i in range (2):
         if random.random () < mutationProb:
             child.gene.append (random.uniform (randRange[0], randRange[1]))
         if random.randint (0, 1):
@@ -126,11 +126,17 @@ def create_new_population (pop, randRange):
     return newpop
 
 def fitness (bird):
+    import time
+
+    start = time.time()
     travel, distance = flappy.main (bird)
-    if distance == 0:
-        distance = 0.001
-    print (round (travel*10 - distance), " with this distance: ", distance, "with this travel: ", travel)
-    return round (travel*10 - distance) 
+    # if distance == 0:
+        # distance = 0.001
+    # print (round (travel*10 - distance), " with this distance: ", distance, "with this travel: ", travel)
+    # return round (travel*10 - distance) 
+    t = round((time.time() - start)*100)
+    print(t)
+    return t
 
 def iterate_pop (pop):
     for i in range (0, len (pop), 8):
@@ -155,7 +161,7 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    pop = big_bang (120, 3, [-100, 100])
+    pop = big_bang (64, 2, [-100, 100])
     pop = iterate_pop (pop)
 
     for i in range (0, int (argv[1])):
