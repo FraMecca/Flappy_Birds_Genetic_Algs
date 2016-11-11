@@ -8,7 +8,7 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 60
+FPS = 420
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
@@ -59,7 +59,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-    random.seed(1)
+    # random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -82,7 +82,7 @@ def main(net):
     IMAGES['base'] = pygame.image.load('assets/sprites/base.png').convert_alpha()
 
     # sounds
-    soundExt = '.ogg'
+    # soundExt = '.ogg'
 
     # #SOUNDS['die']    = pygame.mixer.Sound('assets/audio/die' + soundExt)
     # #SOUNDS['hit']    = pygame.mixer.Sound('assets/audio/hit' + soundExt)
@@ -254,8 +254,7 @@ def mainGame(movementInfo, net):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-            },score * (SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
-            print (score * (SCREENWIDTH - lowerPipes[0]['x']))
+            },(SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2

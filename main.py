@@ -4,6 +4,11 @@ import time
 import random
 import FlappyBirdClone.flappy as flappy
 
+THRESHOLD = 1650
+MUT_THRESHOLD = 0.07
+avgFitness = []
+mutationProb = MUT_THRESHOLD
+
 class Bird(object):
 
     def __init__(self):
@@ -31,7 +36,7 @@ def big_bang(n, sizeGene, randRange):
         pop.append (b)
     return pop
 
-def have_the_sex (abird, bbird, mutationProb, randRange):
+def have_the_sex (abird, bbird, randRange):
     child = Bird ()
     for i in range (3):
         if random.random () < mutationProb:
@@ -43,7 +48,45 @@ def have_the_sex (abird, bbird, mutationProb, randRange):
 
     return child
 
-def create_new_population (pop, mutationProb, randRange):
+# for elitism
+def find_best(pop):
+    bestFit = 0
+    for b in pop:
+        if b.fitness > bestFit:
+            best = b
+            bestFit = best.fitness
+    return best
+
+# for average improvement
+def get_average(pop, n):
+    avg = 0
+    for b in pop:
+        avg += b.fitness
+    avg = avg / n
+    return avg
+
+def check_improvement():
+    global mutationProb
+    if len(avgFitness) == 1:
+        return True
+    diff = avgFitness[-1] - avgFitness[-2]
+    if diff < (0.01 * avgFitness[-2]):
+        if avgFitness[-1] < THRESHOLD:
+            mutationProb = MUT_THRESHOLD
+            print('MUTATION', mutationProb)
+            return False
+        elif avgFitness[-1] > THRESHOLD:
+            mutationProb = mutationProb*1.1
+            print('MUTATION', mutationProb)
+    elif mutationProb > MUT_THRESHOLD:
+        mutationProb = mutationProb/1.1
+        print('MUTATION', mutationProb)
+
+    return True
+        
+
+def create_new_population (pop, randRange):
+    global avgFitness
     pool = list ()
     size = len (pop)
     for b in pop:
@@ -52,19 +95,34 @@ def create_new_population (pop, mutationProb, randRange):
             pool.append (b)
 
     newpop = list ()
-
+    
+    eliteNum = round(0.04*size) + 1 #so that it doesn't go to 0 if size < 100
+    
+    lowAvg = False
+    avgFitness.append(get_average(pop, size))
+    print(avgFitness)
+    if check_improvement() == False:
+        lowAvg = True
 
     for i in range (size):
-        b = pool[random.randint (0, size - 1)]
-        a = pool[random.randint (0, size - 1)]
-        while a == b:
-            # you can't fap, b should be different from a
-            ar = random.randint (0, len (pool) - 1)
-            br = random.randint (0, len (pool) - 1)
-            a = pool[ar]
-            b = pool[br]
-        newpop.append (have_the_sex (a, b, mutationProb, randRange))
-
+        if i < eliteNum: # make flappy great again
+            best = find_best(pop)
+            newpop.append(best)
+        elif lowAvg == True:
+            print('newbreed!')
+            newbreed = big_bang(size - eliteNum, 3, [-100, 100])
+            newpop.extend(newbreed)
+            break
+        else:
+            b = pool[random.randint (0, size - 1)]
+            a = pool[random.randint (0, size - 1)]
+            while a == b:
+                # you can't fap, b should be different from a
+                ar = random.randint (0, len (pool) - 1)
+                br = random.randint (0, len (pool) - 1)
+                a = pool[ar]
+                b = pool[br]
+            newpop.append (have_the_sex (a, b, randRange))
     return newpop
 
 def fitness (bird):
@@ -75,10 +133,10 @@ def fitness (bird):
     return round (travel*10 - distance) 
 
 def iterate_pop (pop):
-    for i in range (0, len (pop), 6):
+    for i in range (0, len (pop), 8):
         j = 0
-        pool = ThreadPool (6)
-        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5]]
+        pool = ThreadPool (8)
+        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5], pop [i+6], pop [i+7]]
         ret = pool.map (fitness, lst)
         pool.close ()
         pool.join ()
@@ -86,8 +144,10 @@ def iterate_pop (pop):
         pop[i+1].fitness = ret[j+1]
         pop[i+2] .fitness= ret[j+2]
         pop[i+3] .fitness= ret[j+3]
-        pop[i+5] .fitness= ret[j+5]
         pop[i+4] .fitness= ret[j+4]
+        pop[i+5] .fitness= ret[j+5]
+        pop[i+6] .fitness= ret[j+6]
+        pop[i+7] .fitness= ret[j+7]
     return pop
 
 
@@ -95,10 +155,12 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    pop = big_bang (60, 3, [-100, 100])
+    pop = big_bang (120, 3, [-100, 100])
     pop = iterate_pop (pop)
 
     for i in range (0, int (argv[1])):
-        print ("POP ", i)
-        pop = create_new_population (pop, 0.1, [-100, 100])
+        print ("POP ", i+1)
+        pop = create_new_population (pop, [-100, 100])
         pop = iterate_pop (pop)
+
+    print(avgFitness)
