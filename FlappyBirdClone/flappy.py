@@ -12,7 +12,7 @@ FPS = 120
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
-PIPEGAPSIZE  = 100 # gap between upper and lower part of pipe
+PIPEGAPSIZE  = 120 # gap between upper and lower part of pipe
 BASEY        = SCREENHEIGHT * 0.79
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
@@ -59,7 +59,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-    random.seed(1)
+    # random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -208,13 +208,13 @@ def mainGame(movementInfo, net):
     # list of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH + 10, 'y': newPipe1[0]['y']},
-        {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
+        # {'x': SCREENWIDTH + 10 + (SCREENWIDTH ), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
         {'x': SCREENWIDTH + 10, 'y': newPipe1[1]['y']},
-        {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2), 'y': newPipe2[1]['y']},
+        # {'x': SCREENWIDTH + 10  + (SCREENWIDTH ), 'y': newPipe2[1]['y']},
     ]
     
     pipeVelX = -4 
@@ -254,7 +254,7 @@ def mainGame(movementInfo, net):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-            },score*(SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
+            },score*(SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + PIPEGAPSIZE / 2))
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2

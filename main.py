@@ -110,7 +110,7 @@ def create_new_population (pop, randRange):
             newpop.append(best)
         elif lowAvg == True:
             print('newbreed!')
-            newbreed = big_bang(size - eliteNum, 3, [-100, 100])
+            newbreed = big_bang(size - eliteNum, 3, randRange)
             newpop.extend(newbreed)
             break
         else:
@@ -161,12 +161,12 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    pop = big_bang (64, 2, [-100, 100])
+    pop = big_bang (64, 2, [-300, 300])
     pop = iterate_pop (pop)
 
     for i in range (0, int (argv[1])):
         print ("POP ", i+1)
-        pop = create_new_population (pop, [-100, 100])
+        pop = create_new_population (pop, [-300, 300])
         pop = iterate_pop (pop)
 
     print(avgFitness)
