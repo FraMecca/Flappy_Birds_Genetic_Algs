@@ -254,7 +254,7 @@ def mainGame(movementInfo, net):
                 'lowerPipes': lowerPipes,
                 'score': score,
                 'playerVelY': playerVelY,
-            },(SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
+            },score*(SCREENWIDTH - lowerPipes[0]['x']), abs (playery - (lowerPipes[0]['y'] + 50))
 
         # check for score
         playerMidPos = playerx + IMAGES['player'][0].get_width() / 2

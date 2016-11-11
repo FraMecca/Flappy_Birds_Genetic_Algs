@@ -70,7 +70,7 @@ def check_improvement():
     if len(avgFitness) == 1:
         return True
     diff = avgFitness[-1] - avgFitness[-2]
-    if diff < (0.01 * avgFitness[-2]):
+    if diff < (0.005 * avgFitness[-2]):
         if avgFitness[-1] < THRESHOLD:
             mutationProb = MUT_THRESHOLD
             print('MUTATION', mutationProb)
