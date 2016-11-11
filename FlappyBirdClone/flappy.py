@@ -8,11 +8,11 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 120
+FPS = 240
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
-PIPEGAPSIZE  = 100 # gap between upper and lower part of pipe
+PIPEGAPSIZE  = 130 # gap between upper and lower part of pipe
 BASEY        = SCREENHEIGHT * 0.79
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
@@ -59,7 +59,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-    random.seed(1)
+    # random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -129,9 +129,9 @@ def main(net):
     return travel, distance
     # showGameOverScreen(crashInfo)
 
-def calculate_movement(net, y, pipey):
+def calculate_movement(net, y, pipey, pipe2y):
     """gets the movement from neural network"""
-    result = net.toflapornottoflap ([y, pipey])
+    result = net.toflapornottoflap ([y, pipey, pipe2y])
     return round(result)
 
 
@@ -208,29 +208,29 @@ def mainGame(movementInfo, net):
     # list of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH, 'y': newPipe1[0]['y']},
-        # {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
+        {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
-        {'x': SCREENWIDTH + 10, 'y': newPipe1[1]['y']},
-        # {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
+        {'x': SCREENWIDTH , 'y': newPipe1[1]['y']},
+        {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
     ]
     
     pipeVelX = -4 
 
     # player velocity, max velocity, downward accleration, accleration on flap
     playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  12  # max vel along Y, max descend speed
-    playerMinVelY =  -6 # min vel along Y, max ascend speed
-    playerAccY    =   3  # players downward accleration
+    playerMaxVelY =  15  # max vel along Y, max descend speed
+    playerMinVelY =  -8 # min vel along Y, max ascend speed
+    playerAccY    =   6  # players downward accleration
     playerFlapAcc =  -9 # players speed on flapping
     playerFlapped = False # True when player flaps
 
 
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        mov = calculate_movement(net, playery, lowerPipes[0]['y']+50)
+        mov = calculate_movement(net, playery, lowerPipes[0]['y']+50, lowerPipes[1]['y'] + 50)
         # print(mov)
         if mov == 1:
             if playery > -2 * IMAGES['player'][0].get_height():

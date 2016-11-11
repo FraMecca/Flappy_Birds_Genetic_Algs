@@ -8,6 +8,7 @@ THRESHOLD = 90
 MUT_THRESHOLD = 0.07
 avgFitness = []
 mutationProb = MUT_THRESHOLD
+NUMBERGENES = 3
 
 class Bird(object):
 
@@ -19,8 +20,9 @@ class Bird(object):
     #2flapornot2flap
     def toflapornottoflap(self, inputs):
         self.flap = 0
+        print (inputs, self.gene)
         for i in zip (inputs, self.gene):
-            self.flap += i[0] *  i[1] #* random.randint (0, 100)
+            self.flap += i[0] * i[1]
         # print ( 1 / (1 + exp (-self.flap / 100000)), self.flap)
         return 1 / (1 + exp (-self.flap / 100000))
 
@@ -38,7 +40,7 @@ def big_bang(n, sizeGene, randRange):
 
 def have_the_sex (abird, bbird, randRange):
     child = Bird ()
-    for i in range (2):
+    for i in range (0, NUMBERGENES):
         if random.random () < mutationProb:
             child.gene.append (random.uniform (randRange[0], randRange[1]))
         if random.randint (0, 1):
@@ -96,7 +98,7 @@ def create_new_population (pop, randRange):
 
     newpop = list ()
     
-    eliteNum = round(0.04*size) + 1 #so that it doesn't go to 0 if size < 100
+    eliteNum = round(0.03*size) + 1 #so that it doesn't go to 0 if size < 100
     
     lowAvg = False
     avgFitness.append(get_average(pop, size))
@@ -163,11 +165,14 @@ from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
     randRange = [-90, 90]
-    pop = big_bang (64, 2, randRange)
+    pop = big_bang (64, NUMBERGENES, randRange)
     pop = iterate_pop (pop)
     print(avgFitness)
 
     for i in range (0, int (argv[1])):
+        if i == 3:
+            print ("RALLENTO")
+            # flappy.FPS = 30
         print ("POP ", i+1)
         pop = create_new_population (pop, randRange)
         pop = iterate_pop (pop)
