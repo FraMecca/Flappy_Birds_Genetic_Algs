@@ -4,7 +4,7 @@ import time
 import random
 import FlappyBirdClone.flappy as flappy
 
-THRESHOLD = 90
+THRESHOLD = 70
 MUT_THRESHOLD = 0.07
 avgFitness = []
 mutationProb = MUT_THRESHOLD
