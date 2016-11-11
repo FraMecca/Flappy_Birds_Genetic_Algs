@@ -8,7 +8,7 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 120
+FPS = 240
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
@@ -207,7 +207,7 @@ def mainGame(movementInfo, net):
 
     # list of upper pipes
     upperPipes = [
-        {'x': SCREENWIDTH + 10, 'y': newPipe1[0]['y']},
+        {'x': SCREENWIDTH, 'y': newPipe1[0]['y']},
         # {'x': SCREENWIDTH + 10 + (SCREENWIDTH ), 'y': newPipe2[0]['y']},
     ]
 
