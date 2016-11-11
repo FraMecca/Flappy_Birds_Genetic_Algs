@@ -8,11 +8,11 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 240
+FPS = 120
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
-PIPEGAPSIZE  = 120 # gap between upper and lower part of pipe
+PIPEGAPSIZE  = 100 # gap between upper and lower part of pipe
 BASEY        = SCREENHEIGHT * 0.79
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
@@ -59,7 +59,7 @@ def main(net):
     FPSCLOCK = pygame.time.Clock()
     SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
     pygame.display.set_caption('Flappy Bird')
-    # random.seed(1)
+    random.seed(1)
     # numbers sprites for score display
     IMAGES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
@@ -208,22 +208,22 @@ def mainGame(movementInfo, net):
     # list of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH, 'y': newPipe1[0]['y']},
-        # {'x': SCREENWIDTH + 10 + (SCREENWIDTH ), 'y': newPipe2[0]['y']},
+        # {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
         {'x': SCREENWIDTH + 10, 'y': newPipe1[1]['y']},
-        # {'x': SCREENWIDTH + 10  + (SCREENWIDTH ), 'y': newPipe2[1]['y']},
+        # {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
     ]
     
     pipeVelX = -4 
 
     # player velocity, max velocity, downward accleration, accleration on flap
     playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  10  # max vel along Y, max descend speed
-    playerMinVelY =  -8 # min vel along Y, max ascend speed
-    playerAccY    =   1  # players downward accleration
+    playerMaxVelY =  12  # max vel along Y, max descend speed
+    playerMinVelY =  -6 # min vel along Y, max ascend speed
+    playerAccY    =   3  # players downward accleration
     playerFlapAcc =  -9 # players speed on flapping
     playerFlapped = False # True when player flaps
 

@@ -162,7 +162,7 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    randRange = [-30, 30]
+    randRange = [-90, 90]
     pop = big_bang (64, 2, randRange)
     pop = iterate_pop (pop)
     print(avgFitness)
