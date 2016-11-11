@@ -107,6 +107,7 @@ def create_new_population (pop, randRange):
     for i in range (size):
         if i < eliteNum: # make flappy great again
             best = find_best(pop)
+            print ("IL migliore ha: ", best.gene[0], best.gene[1])
             newpop.append(best)
         elif lowAvg == True:
             print('newbreed!')
@@ -161,12 +162,13 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    pop = big_bang (64, 2, [-300, 300])
+    randRange = [-30, 30]
+    pop = big_bang (64, 2, randRange)
     pop = iterate_pop (pop)
+    print(avgFitness)
 
     for i in range (0, int (argv[1])):
         print ("POP ", i+1)
-        pop = create_new_population (pop, [-300, 300])
+        pop = create_new_population (pop, randRange)
         pop = iterate_pop (pop)
-
     print(avgFitness)
