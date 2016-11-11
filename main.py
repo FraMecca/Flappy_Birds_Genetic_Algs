@@ -20,7 +20,7 @@ class Bird(object):
     #2flapornot2flap
     def toflapornottoflap(self, inputs):
         self.flap = 0
-        print (inputs, self.gene)
+        # print (inputs, self.gene)
         for i in zip (inputs, self.gene):
             self.flap += i[0] * i[1]
         # print ( 1 / (1 + exp (-self.flap / 100000)), self.flap)
@@ -109,7 +109,7 @@ def create_new_population (pop, randRange):
     for i in range (size):
         if i < eliteNum: # make flappy great again
             best = find_best(pop)
-            print ("IL migliore ha: ", best.gene[0], best.gene[1])
+            print ("IL migliore ha: ", best.gene[0], best.gene[1], best.gene[2])
             newpop.append(best)
         elif lowAvg == True:
             print('newbreed!')
@@ -138,14 +138,14 @@ def fitness (bird):
     # print (round (travel*10 - distance), " with this distance: ", distance, "with this travel: ", travel)
     # return round (travel*10 - distance) 
     t = round((time.time() - start)*100)
-    print(t)
+    # print(t)
     return t
 
 def iterate_pop (pop):
-    for i in range (0, len (pop), 8):
+    for i in range (0, len (pop), 6):
         j = 0
-        pool = ThreadPool (8)
-        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5], pop [i+6], pop [i+7]]
+        pool = ThreadPool (6)
+        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5]]
         ret = pool.map (fitness, lst)
         pool.close ()
         pool.join ()
@@ -155,8 +155,8 @@ def iterate_pop (pop):
         pop[i+3] .fitness= ret[j+3]
         pop[i+4] .fitness= ret[j+4]
         pop[i+5] .fitness= ret[j+5]
-        pop[i+6] .fitness= ret[j+6]
-        pop[i+7] .fitness= ret[j+7]
+        # pop[i+6] .fitness= ret[j+6]
+        # pop[i+7] .fitness= ret[j+7]
     return pop
 
 
@@ -164,8 +164,8 @@ def iterate_pop (pop):
 from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
-    randRange = [-90, 90]
-    pop = big_bang (64, NUMBERGENES, randRange)
+    randRange = [-300, 300]
+    pop = big_bang (120, NUMBERGENES, randRange)
     pop = iterate_pop (pop)
     print(avgFitness)
 
