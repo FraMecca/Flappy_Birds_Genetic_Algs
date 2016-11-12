@@ -170,9 +170,9 @@ if __name__ == '__main__':
     print(avgFitness)
 
     for i in range (0, int (argv[1])):
-        if i == 3:
+        if i == 50 and len(argv) == 4:
             print ("RALLENTO")
-            # flappy.FPS = 30
+            flappy.FPS = 45
         print ("POP ", i+1)
         pop = create_new_population (pop, randRange)
         pop = iterate_pop (pop)

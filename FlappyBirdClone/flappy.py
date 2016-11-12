@@ -8,7 +8,7 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 240
+FPS = int (sys.argv[2])
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
@@ -52,7 +52,6 @@ PIPES_LIST = (
     'assets/sprites/pipe-red.png',
 )
 
-from neat import nn, population, statistics
 def main(net):
     global SCREEN, FPSCLOCK
     pygame.init()
@@ -208,29 +207,29 @@ def mainGame(movementInfo, net):
     # list of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH, 'y': newPipe1[0]['y']},
-        {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
+        {'x': SCREENWIDTH + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
         {'x': SCREENWIDTH , 'y': newPipe1[1]['y']},
-        {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
+        {'x': SCREENWIDTH  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
     ]
     
     pipeVelX = -4 
 
     # player velocity, max velocity, downward accleration, accleration on flap
     playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  15  # max vel along Y, max descend speed
+    playerMaxVelY =  10  # max vel along Y, max descend speed
     playerMinVelY =  -8 # min vel along Y, max ascend speed
-    playerAccY    =   6  # players downward accleration
+    playerAccY    =   1  # players downward accleration
     playerFlapAcc =  -9 # players speed on flapping
     playerFlapped = False # True when player flaps
 
 
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        mov = calculate_movement(net, playery, lowerPipes[0]['y']+50, lowerPipes[1]['y'] + 50)
+        mov = calculate_movement(net, playery, lowerPipes[0]['y']+PIPEGAPSIZE /2, lowerPipes[1]['y'] + PIPEGAPSIZE /2)
         # print(mov)
         if mov == 1:
             if playery > -2 * IMAGES['player'][0].get_height():
@@ -245,6 +244,7 @@ def mainGame(movementInfo, net):
             font = pygame.font.SysFont('Arial', 25)
             # SCREEN.blit(font.render("LOWER" + str (lowerPipes[0]['y']), True, (0,0,0)), (0, playery))
             pygame.display.update()
+            # print (lowerPipes[0]['x'] - lowerPipes[1]['x'])
             # time.sleep (2)
             return {
                 'y': playery,
@@ -293,7 +293,6 @@ def mainGame(movementInfo, net):
         if upperPipes[0]['x'] < -IMAGES['pipe'][0].get_width():
             upperPipes.pop(0)
             lowerPipes.pop(0)
-            pipeCnt += 1
 
         # draw sprites
         SCREEN.blit(IMAGES['background'], (0,0))
@@ -371,15 +370,23 @@ def playerShm(playerShm):
     else:
         playerShm['val'] -= 1
 
-
+PREVGAPY = 0
 def getRandomPipe():
     """returns a randomly generated pipe"""
     # y of gap between upper and lower pipe
-    gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
-    gapY += int(BASEY * 0.2)
-    pipeHeight = IMAGES['pipe'][0].get_height()
-    pipeX = SCREENWIDTH + 10
-
+    global PREVGAPY
+    while True:
+        gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
+        gapY += int(BASEY * 0.2)
+        # font = pygame.font.SysFont('Arial', 25)
+        # SCREEN.blit(font.render("LOWER" + str (lowerPipes[0]['y']), True, (0,0,0)), (0, playery))
+        # SCREEN.blit(font.render("LOWER", True, (255,0,0)), (0, gapY))
+        # pygame.display.update()
+        pipeHeight = IMAGES['pipe'][0].get_height()
+        pipeX = SCREENWIDTH 
+        if abs (gapY - PREVGAPY) < 350:
+            PREVGAPY = gapY
+            break
     return [
         {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
         {'x': pipeX, 'y': gapY + PIPEGAPSIZE}, # lower pipe
