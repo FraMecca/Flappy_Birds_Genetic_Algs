@@ -1,8 +1,9 @@
 import os
-from numpy import exp
+from math import exp
 import time
 import random
 import FlappyBirdClone.flappy as flappy
+from multiprocessing import cpu_count,  Pool as ThreadPool
 
 THRESHOLD = 70
 MUT_THRESHOLD = 0.07
@@ -14,8 +15,7 @@ class Bird(object):
     def __init__(self):
         self.fitness = 1
         self.gene = [] #using 3 chromosomes
-        self.flap = 0
-
+        self.flap = 0 
     #2flapornot2flap
     def toflapornottoflap(self, inputs):
         self.flap = 0
@@ -55,6 +55,7 @@ def find_best(pop):
         if b.fitness > bestFit:
             best = b
             bestFit = best.fitness
+            pop.pop(pop.index(b))# ohgodwhy
     return best
 
 # for average improvement
@@ -79,11 +80,10 @@ def check_improvement():
             mutationProb = mutationProb*1.1
             print('MUTATION', mutationProb)
     elif mutationProb > MUT_THRESHOLD:
-        mutationProb = mutationProb/1.1
+        mutationProb = MUT_THRESHOLD
         print('MUTATION', mutationProb)
 
-    return True
-        
+    return True 
 
 def create_new_population (pop, randRange):
     global avgFitness
@@ -95,9 +95,9 @@ def create_new_population (pop, randRange):
             pool.append (b)
 
     newpop = list ()
-    
+
     eliteNum = round(0.04*size) + 1 #so that it doesn't go to 0 if size < 100
-    
+
     lowAvg = False
     avgFitness.append(get_average(pop, size))
     print(avgFitness)
@@ -105,25 +105,26 @@ def create_new_population (pop, randRange):
         lowAvg = True
 
     for i in range (size):
-        if i < eliteNum: # make flappy great again
+        if i < size - eliteNum: 
+            if lowAvg == True:
+                print('newbreed!')
+                newbreed = big_bang(size - eliteNum, 3, randRange)
+                newpop.extend(newbreed)
+                break
+            else:
+                b = pool[random.randint (0, size - 1)]
+                a = pool[random.randint (0, size - 1)]
+                while a == b:
+                    # you can't fap, b should be different from a
+                    ar = random.randint (0, len (pool) - 1)
+                    br = random.randint (0, len (pool) - 1)
+                    a = pool[ar]
+                    b = pool[br]
+                newpop.append (have_the_sex (a, b, randRange))
+        else: #make flappy great again
             best = find_best(pop)
             print ("IL migliore ha: ", best.gene[0], best.gene[1])
             newpop.append(best)
-        elif lowAvg == True:
-            print('newbreed!')
-            newbreed = big_bang(size - eliteNum, 3, randRange)
-            newpop.extend(newbreed)
-            break
-        else:
-            b = pool[random.randint (0, size - 1)]
-            a = pool[random.randint (0, size - 1)]
-            while a == b:
-                # you can't fap, b should be different from a
-                ar = random.randint (0, len (pool) - 1)
-                br = random.randint (0, len (pool) - 1)
-                a = pool[ar]
-                b = pool[br]
-            newpop.append (have_the_sex (a, b, randRange))
     return newpop
 
 def fitness (bird):
@@ -136,37 +137,36 @@ def fitness (bird):
     # print (round (travel*10 - distance), " with this distance: ", distance, "with this travel: ", travel)
     # return round (travel*10 - distance) 
     t = round((time.time() - start)*100)
-    print(t)
+    # print(t)
     return t
 
 def iterate_pop (pop):
-    for i in range (0, len (pop), 8):
+    ncpu = cpu_count()
+    for i in range (0, len (pop), ncpu):
         j = 0
-        pool = ThreadPool (8)
-        lst = [pop[i], pop[i+ 1], pop [i+2], pop [i+3], pop [i+4], pop [i+5], pop [i+6], pop [i+7]]
+        lst = []
+        pool = ThreadPool (ncpu)
+        for j in range(0, ncpu - 1):
+            if i+j < len(pop):
+                lst.append(pop[i+j])
         ret = pool.map (fitness, lst)
         pool.close ()
         pool.join ()
-        pop[i] .fitness= ret[j]
-        pop[i+1].fitness = ret[j+1]
-        pop[i+2] .fitness= ret[j+2]
-        pop[i+3] .fitness= ret[j+3]
-        pop[i+4] .fitness= ret[j+4]
-        pop[i+5] .fitness= ret[j+5]
-        pop[i+6] .fitness= ret[j+6]
-        pop[i+7] .fitness= ret[j+7]
+        for j in range(0, ncpu - 1):
+            if i+j < len(pop):
+                pop[i+j].fitness= ret[j]
     return pop
 
 
 
-from multiprocessing import Pool as ThreadPool
 if __name__ == '__main__':
     from sys import argv
+    print("Press Ctrl-C to stop.")
     randRange = [-90, 90]
-    pop = big_bang (64, 2, randRange)
+    flappy.change_fps(int(argv[2]))
+    pop = big_bang (int(argv[1]), 2, randRange)
     pop = iterate_pop (pop)
     print(avgFitness)
-
     for i in range (0, int (argv[1])):
         print ("POP ", i+1)
         pop = create_new_population (pop, randRange)

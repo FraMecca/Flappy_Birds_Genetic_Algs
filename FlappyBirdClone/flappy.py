@@ -8,11 +8,11 @@ from pygame.locals import *
 
 os.chdir("./FlappyBirdClone")
 
-FPS = 480
+FPS = 240 
 SCREENWIDTH  = 288
 SCREENHEIGHT = 512
 # amount by which base can maximum shift to left
-PIPEGAPSIZE  = 100 # gap between upper and lower part of pipe
+PIPEGAPSIZE  = 110 # gap between upper and lower part of pipe
 BASEY        = SCREENHEIGHT * 0.79
 # image, sound and hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
@@ -52,7 +52,10 @@ PIPES_LIST = (
     'assets/sprites/pipe-red.png',
 )
 
-from neat import nn, population, statistics
+def change_fps(n):
+    global FPS
+    FPS = n
+
 def main(net):
     global SCREEN, FPSCLOCK
     pygame.init()
@@ -208,29 +211,29 @@ def mainGame(movementInfo, net):
     # list of upper pipes
     upperPipes = [
         {'x': SCREENWIDTH, 'y': newPipe1[0]['y']},
-        # {'x': SCREENWIDTH + 10 + (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
+        # {'x': SCREENWIDTH +  (SCREENWIDTH / 2), 'y': newPipe2[0]['y']},
     ]
 
     # list of lowerpipe
     lowerPipes = [
-        {'x': SCREENWIDTH + 10, 'y': newPipe1[1]['y']},
-        # {'x': SCREENWIDTH + 10  + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
+        {'x': SCREENWIDTH , 'y': newPipe1[1]['y']},
+        # {'x': SCREENWIDTH   + (SCREENWIDTH / 2 ), 'y': newPipe2[1]['y']},
     ]
     
     pipeVelX = -4 
 
     # player velocity, max velocity, downward accleration, accleration on flap
     playerVelY    =  -9   # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY =  12  # max vel along Y, max descend speed
-    playerMinVelY =  -6 # min vel along Y, max ascend speed
-    playerAccY    =   3  # players downward accleration
+    playerMaxVelY =  11  # max vel along Y, max descend speed
+    playerMinVelY =  -8 # min vel along Y, max ascend speed
+    playerAccY    =   2  # players downward accleration
     playerFlapAcc =  -9 # players speed on flapping
     playerFlapped = False # True when player flaps
 
 
     while True:
         # print (lowerPipes[0]['y'], upperPipes[0]['y'], lowerPipes[0]['x']-playerx, playery)
-        mov = calculate_movement(net, playery, lowerPipes[0]['y']+50)
+        mov = calculate_movement(net, playery, lowerPipes[0]['y']+PIPEGAPSIZE/2-10)
         # print(mov)
         if mov == 1:
             if playery > -2 * IMAGES['player'][0].get_height():
@@ -378,7 +381,7 @@ def getRandomPipe():
     gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
     gapY += int(BASEY * 0.2)
     pipeHeight = IMAGES['pipe'][0].get_height()
-    pipeX = SCREENWIDTH + 10
+    pipeX = SCREENWIDTH
 
     return [
         {'x': pipeX, 'y': gapY - pipeHeight},  # upper pipe
